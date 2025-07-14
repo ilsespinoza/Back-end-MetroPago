@@ -1,4 +1,4 @@
-import { Entity, PrimaryGeneratedColumn, Column } from 'typeorm';
+import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn } from 'typeorm';
 
 @Entity()
 export class User {
@@ -6,8 +6,15 @@ export class User {
   id: number;
 
   @Column()
+  nombre: string;
+
+  @Column({ unique: true })
   email: string;
 
-  @Column({ nullable: true })
-  stripeCustomerId: string;
+  @Column()
+  password: string;
+
+  @CreateDateColumn()
+  creadoEn: Date;
 }
+

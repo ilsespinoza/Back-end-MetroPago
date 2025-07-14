@@ -4,6 +4,7 @@ import { User } from './user/entities/user.entity';
 import { Subscription } from './subscription/entities/subscription.entity';
 import { UserModule } from './user/user.module';
 import { SubscriptionModule } from './subscription/subscription.module';
+import { AuthModule } from './auth/auth.module';
 
 @Module({
   imports: [
@@ -20,6 +21,7 @@ import { SubscriptionModule } from './subscription/subscription.module';
     TypeOrmModule.forFeature([User, Subscription]),
     UserModule,
     SubscriptionModule,
+    AuthModule,
   ],
 })
 export class AppModule {}
