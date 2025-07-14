@@ -5,6 +5,7 @@ import { Subscription } from './subscription/entities/subscription.entity';
 import { UserModule } from './user/user.module';
 import { SubscriptionModule } from './subscription/subscription.module';
 import { AuthModule } from './auth/auth.module';
+import { ScheduleModule } from '@nestjs/schedule';
 
 @Module({
   imports: [
@@ -22,6 +23,7 @@ import { AuthModule } from './auth/auth.module';
     UserModule,
     SubscriptionModule,
     AuthModule,
+    ScheduleModule.forRoot(),
   ],
 })
 export class AppModule {}
