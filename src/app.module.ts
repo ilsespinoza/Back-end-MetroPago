@@ -1,7 +1,9 @@
 import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { User } from './users/user.entity';
-import { Subscription } from './subscriptions/subscription.entity';
+import { User } from './user/entities/user.entity';
+import { Subscription } from './subscription/entities/subscription.entity';
+import { UserModule } from './user/user.module';
+import { SubscriptionModule } from './subscription/subscription.module';
 
 @Module({
   imports: [
@@ -13,9 +15,11 @@ import { Subscription } from './subscriptions/subscription.entity';
       password: 'ilseespinoza2708',
       database: 'metropago',
       entities: [User, Subscription],
-      synchronize: true, // usar migraciones para producción
+      synchronize: true,
     }),
     TypeOrmModule.forFeature([User, Subscription]),
+    UserModule,
+    SubscriptionModule,
   ],
 })
 export class AppModule {}
