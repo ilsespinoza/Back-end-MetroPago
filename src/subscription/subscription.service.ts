@@ -15,7 +15,6 @@ export class SubscriptionService {
     private readonly subscriptionRepository: Repository<Subscription>,
   ) {}
 
-  // Tarea programada: cada día a medianoche revisa suscripciones expiradas
   @Cron(CronExpression.EVERY_DAY_AT_MIDNIGHT)
   async revisarSuscripcionesExpiradas() {
     const ahora = new Date();
@@ -34,24 +33,38 @@ export class SubscriptionService {
     }
   }
 
-  create(createSubscriptionDto: CreateSubscriptionDto) {
-    return 'This action adds a new subscription';
+  async create(createSubscriptionDto: CreateSubscriptionDto): Promise<Subscription> {
+    const nueva = this.subscriptionRepository.create(createSubscriptionDto);
+    return this.subscriptionRepository.save(nueva);
   }
 
-  findAll() {
-    return 'This action returns all subscriptions';
+  async findAll(): Promise<Subscription[]> {
+    return this.subscriptionRepository.find({
+      relations: ['user'], // incluye datos del usuario si quieres
+    });
   }
 
-  findOne(id: number) {
-    return `This action returns a #${id} subscription`;
+  async findOne(id: number): Promise<Subscription | null> {
+    return this.subscriptionRepository.findOne({
+      where: { id },
+      relations: ['user'],
+    });
   }
 
-  update(id: number, updateSubscriptionDto: UpdateSubscriptionDto) {
-    return `This action updates a #${id} subscription`;
+  async update(id: number, updateDto: UpdateSubscriptionDto): Promise<Subscription> {
+    await this.subscriptionRepository.update(id, updateDto);
+    const actualizada = await this.findOne(id);
+  
+    if (!actualizada) {
+      throw new Error(`La suscripción con ID ${id} no existe`);
+    }
+  
+    return actualizada;
   }
 
-  remove(id: number) {
-    return `This action removes a #${id} subscription`;
+  async remove(id: number): Promise<void> {
+    await this.subscriptionRepository.delete(id);
   }
 }
+
 
