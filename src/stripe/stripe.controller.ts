@@ -30,7 +30,7 @@ export class StripeController {
   }
 
   @Post('webhook')
-  @HttpCode(200) // Para que Stripe no marque error
+  @HttpCode(200)
   async handleWebhook(
     @Req() request: Request,
     @Res() response: Response,
@@ -40,19 +40,22 @@ export class StripeController {
 
     if (!webhookSecret) {
       console.error('Falta STRIPE_WEBHOOK_SECRET en el .env');
-      return response.status(500).send('Falta configuración del webhook secret');
+      return response
+        .status(500)
+        .send('Falta configuración del webhook secret');
     }
 
     let event: Stripe.Event;
 
     try {
+      // Asegúrate de tener habilitado `rawBody` en `main.ts`
       event = this.stripeService.getStripe().webhooks.constructEvent(
-        request['rawBody'], // **body en crudo para validar**
+        (request as any).rawBody, // usa rawBody correctamente
         signature,
         webhookSecret,
       );
     } catch (err) {
-      console.error('Webhook signature error:', err.message);
+      console.error('Error en la firma del webhook:', err.message);
       return response.status(400).send(`Webhook Error: ${err.message}`);
     }
 
@@ -60,7 +63,7 @@ export class StripeController {
       await this.stripeService.registrarSuscripcionDesdeStripe(event);
       return response.send({ received: true });
     } catch (err) {
-      console.error('Error procesando evento:', err.message);
+      console.error('Error procesando evento del webhook:', err.message);
       return response.status(500).send('Error procesando webhook');
     }
   }
