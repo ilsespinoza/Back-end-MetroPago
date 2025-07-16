@@ -1,13 +1,13 @@
+// src/stripe/stripe.module.ts
 import { Module } from '@nestjs/common';
 import { StripeService } from './stripe.service';
 import { StripeController } from './stripe.controller';
-import { TypeOrmModule } from '@nestjs/typeorm';
-import { User } from 'src/user/entities/user.entity';
+import { ConfigModule } from '@nestjs/config';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([User])],
+  imports: [ConfigModule], // Para que funcione ConfigService en StripeService
   providers: [StripeService],
   controllers: [StripeController],
-  exports: [StripeService],
+  exports: [StripeService], // Exporta para que otros módulos lo usen
 })
 export class StripeModule {}

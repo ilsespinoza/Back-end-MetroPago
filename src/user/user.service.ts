@@ -6,51 +6,50 @@ import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import * as bcrypt from 'bcrypt';
 import { Subscription, SubscriptionStatus } from 'src/subscription/entities/subscription.entity';
+import { StripeService } from 'src/stripe/stripe.service';
 
 @Injectable()
 export class UserService {
   constructor(
     @InjectRepository(User)
     private readonly userRepository: Repository<User>,
+    private readonly stripeService: StripeService,
     @InjectRepository(Subscription)
     private readonly subscriptionRepository: Repository<Subscription>,
   ) {}
 
-  async create(createUserDto: CreateUserDto): Promise<User> {
-    // Verificar si ya existe usuario con ese email
+  async create(createUserDto: CreateUserDto): Promise<{ checkoutUrl: string }> {
     const existeUsuario = await this.userRepository.findOne({
       where: { email: createUserDto.email },
     });
-  
+
     if (existeUsuario) {
       throw new ConflictException('El correo ya está registrado');
     }
-  
-    // Continúa con el guardado
+
     const hashedPassword = await bcrypt.hash(createUserDto.password, 10);
+
+    // Crear usuario sin suscripción todavía
     const nuevoUsuario = this.userRepository.create({
       ...createUserDto,
       password: hashedPassword,
     });
-  
-    const userGuardado = await this.userRepository.save(nuevoUsuario);
-  
-    // Crear suscripción (como antes)
-    const now = new Date();
-    const trialEnd = new Date();
-    trialEnd.setDate(now.getDate() + 7);
-  
-    const nuevaSub = this.subscriptionRepository.create({
-      user: userGuardado,
-      stripeSubscriptionId: 'sin_stripe',
-      status: SubscriptionStatus.TRIALING,
-      startDate: now,
-      endDate: trialEnd,
-    });
-  
-    await this.subscriptionRepository.save(nuevaSub);
-  
-    return userGuardado;
+    const usuarioGuardado = await this.userRepository.save(nuevoUsuario);
+
+    // Crear cliente en Stripe
+    const clienteStripe = await this.stripeService.crearCliente(usuarioGuardado.email);
+
+    // Crear sesión de Stripe con priceId
+    const session = await this.stripeService.crearCheckoutSession(
+      clienteStripe.id,
+      createUserDto.priceId // Debe venir en el body desde el frontend
+    );
+
+    if (!session.url) {
+      throw new Error('No se pudo crear la URL de checkout');
+    }
+
+    return { checkoutUrl: session.url };
   }
 
   findAll(): Promise<User[]> {
