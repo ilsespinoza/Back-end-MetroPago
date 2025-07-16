@@ -1,4 +1,6 @@
-import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn } from 'typeorm';
+// user.entity.ts
+import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, OneToMany } from 'typeorm';
+import { Stripe } from 'src/stripe/entities/stripe.entity';
 
 @Entity()
 export class User {
@@ -14,7 +16,12 @@ export class User {
   @Column()
   password: string;
 
+  @Column({ unique: true, nullable: true, type: 'varchar' })
+  stripeCustomerId?: string; 
+
   @CreateDateColumn()
   creadoEn: Date;
-}
 
+  @OneToMany(() => Stripe, (stripe) => stripe.user)
+  subscriptions: Stripe[];
+}

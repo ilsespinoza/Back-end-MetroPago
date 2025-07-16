@@ -1,3 +1,4 @@
+// stripe.entity.ts
 import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, UpdateDateColumn, ManyToOne, JoinColumn } from 'typeorm';
 import { User } from 'src/user/entities/user.entity';
 
@@ -14,18 +15,18 @@ export class Stripe {
   @PrimaryGeneratedColumn()
   id: number;
 
-  @ManyToOne(() => User)
+  @ManyToOne(() => User, (user) => user.subscriptions, { nullable: false })
   @JoinColumn()
-  user: User;  // Relación con usuario local
+  user: User;  
 
   @Column({ unique: true })
-  customerId: string; // ID del cliente en Stripe
+  customerId: string; 
 
   @Column({ unique: true, nullable: true })
-  subscriptionId: string; // ID de la suscripción en Stripe
+  subscriptionId?: string; 
 
   @Column()
-  priceId: string; // ID del plan contratado en Stripe
+  priceId: string; 
 
   @Column({
     type: 'enum',

@@ -22,35 +22,37 @@ export class UserService {
     const existeUsuario = await this.userRepository.findOne({
       where: { email: createUserDto.email },
     });
-
+  
     if (existeUsuario) {
       throw new ConflictException('El correo ya está registrado');
     }
-
+  
     const hashedPassword = await bcrypt.hash(createUserDto.password, 10);
-
-    // Crear usuario sin suscripción todavía
+  
+    // Crear cliente en Stripe
+    const clienteStripe = await this.stripeService.crearCliente(createUserDto.email);
+  
+    // Crear usuario y guardar el stripeCustomerId
     const nuevoUsuario = this.userRepository.create({
       ...createUserDto,
       password: hashedPassword,
+      stripeCustomerId: clienteStripe.id, // 👈 SE GUARDA AQUÍ
     });
     const usuarioGuardado = await this.userRepository.save(nuevoUsuario);
-
-    // Crear cliente en Stripe
-    const clienteStripe = await this.stripeService.crearCliente(usuarioGuardado.email);
-
-    // Crear sesión de Stripe con priceId
+  
+    // Crear sesión de Stripe con priceId (desde el frontend)
     const session = await this.stripeService.crearCheckoutSession(
       clienteStripe.id,
-      createUserDto.priceId // Debe venir en el body desde el frontend
+      createUserDto.priceId
     );
-
+  
     if (!session.url) {
       throw new Error('No se pudo crear la URL de checkout');
     }
-
+  
     return { checkoutUrl: session.url };
   }
+  
 
   findAll(): Promise<User[]> {
     return this.userRepository.find();
