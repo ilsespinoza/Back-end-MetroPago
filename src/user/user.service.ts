@@ -29,18 +29,16 @@ export class UserService {
   
     const hashedPassword = await bcrypt.hash(createUserDto.password, 10);
   
-    // Crear cliente en Stripe
+   
     const clienteStripe = await this.stripeService.crearCliente(createUserDto.email);
   
-    // Crear usuario y guardar el stripeCustomerId
     const nuevoUsuario = this.userRepository.create({
       ...createUserDto,
       password: hashedPassword,
-      stripeCustomerId: clienteStripe.id, // 👈 SE GUARDA AQUÍ
+      stripeCustomerId: clienteStripe.id, 
     });
     const usuarioGuardado = await this.userRepository.save(nuevoUsuario);
   
-    // Crear sesión de Stripe con priceId (desde el frontend)
     const session = await this.stripeService.crearCheckoutSession(
       clienteStripe.id,
       createUserDto.priceId
