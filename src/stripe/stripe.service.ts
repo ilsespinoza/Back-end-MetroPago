@@ -94,5 +94,15 @@ export class StripeService {
 
     await this.stripeRepository.save(stripeRecord);
   }
+
+  async obtenerUsuariosConSuscripcionesActivas() {
+    const registros = await this.stripeRepository.find({
+      where: { status: StripeSubscriptionStatus.ACTIVE },
+      relations: ['user'], 
+    });
+  
+    return registros;
+  }
+  
 }
 

@@ -6,6 +6,7 @@ import {
   Res,
   Headers,
   HttpCode,
+  Get,
 } from '@nestjs/common';
 import { StripeService } from './stripe.service';
 import { Request, Response } from 'express';
@@ -36,7 +37,9 @@ export class StripeController {
     @Res() response: Response,
     @Headers('stripe-signature') signature: string,
   ) {
-    const webhookSecret = this.configService.get<string>('STRIPE_WEBHOOK_SECRET');
+    const webhookSecret = this.configService.get<string>(
+      'STRIPE_WEBHOOK_SECRET',
+    );
 
     if (!webhookSecret) {
       console.error('Falta STRIPE_WEBHOOK_SECRET en el .env');
@@ -66,5 +69,10 @@ export class StripeController {
       console.error('Error procesando evento del webhook:', err.message);
       return response.status(500).send('Error procesando webhook');
     }
+  }
+  @Get('suscripciones-activas')
+  async obtenerSuscripcionesActivas() {
+    const suscripciones = await this.stripeService.obtenerUsuariosConSuscripcionesActivas();
+    return suscripciones;
   }
 }
