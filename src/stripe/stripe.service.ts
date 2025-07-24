@@ -42,16 +42,39 @@ export class StripeService {
 
     return cliente;
   }
-
   async crearCheckoutSession(customerId: string, priceId: string) {
+    // Obtener el usuario por su customerId
+    const user = await this.userRepository.findOne({
+      where: { stripeCustomerId: customerId },
+    });
+  
+    if (!user) {
+      throw new Error(`Usuario con customerId ${customerId} no encontrado`);
+    }
+  
+    // Obtener nombre del plan desde el priceId
+    const planes = {
+      'price_1RlI9jPKNWjJLZi9ywBM9GKo': 'Semanal',
+      'price_1RlKi7PKNWjJLZi9DF8h8D4a': 'Mensual',
+      'price_1RlKjjPKNWjJLZi9PTB3eOOs': 'Bimensual',
+      'price_1RlKmNPKNWjJLZi9lTleDTfj': 'Semestral',
+      'price_1RlKnbPKNWjJLZi9rX5SLPu1': 'Anual',
+    };
+  
+    const nombrePlan = planes[priceId] || 'PlanDesconocido';
+  
+    // Construir success_url dinámico con parámetros
+    const successUrl = `metropago://usuario/perfil?nombre=${encodeURIComponent(user.nombre)}&email=${encodeURIComponent(user.email)}&plan=${encodeURIComponent(nombrePlan)}`;
+  
     return this.stripe.checkout.sessions.create({
       mode: 'subscription',
       customer: customerId,
       line_items: [{ price: priceId, quantity: 1 }],
-      success_url: 'http://localhost:3000/success',
-      cancel_url: 'http://localhost:3000/cancel',
+      success_url: successUrl,
+      cancel_url: 'metropago://pago-cancelado',
     });
   }
+  
 
   async registrarSuscripcionDesdeStripe(event: Stripe.Event) {
     if (

@@ -51,9 +51,8 @@ export class StripeController {
     let event: Stripe.Event;
 
     try {
-      // Asegúrate de tener habilitado `rawBody` en `main.ts`
       event = this.stripeService.getStripe().webhooks.constructEvent(
-        (request as any).rawBody, // usa rawBody correctamente
+        (request as any).rawBody, 
         signature,
         webhookSecret,
       );
