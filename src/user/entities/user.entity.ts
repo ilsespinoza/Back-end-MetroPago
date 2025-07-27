@@ -10,6 +10,15 @@ export class User {
   @Column()
   nombre: string;
 
+  @Column()
+  apellido: string;
+
+  @Column()
+  telefono: string;
+
+  @Column()
+  ciudad: string;
+
   @Column({ unique: true })
   email: string;
 
