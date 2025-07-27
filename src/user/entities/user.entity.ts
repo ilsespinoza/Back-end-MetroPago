@@ -1,6 +1,21 @@
-// user.entity.ts
-import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, OneToMany } from 'typeorm';
+import {
+  Entity,
+  PrimaryGeneratedColumn,
+  Column,
+  CreateDateColumn,
+  OneToMany,
+} from 'typeorm';
 import { Stripe } from 'src/stripe/entities/stripe.entity';
+
+
+export enum Ciudad {
+  CDMX = 'CDMX',
+  Guadalajara = 'Guadalajara',
+  Monterrey = 'Monterrey',
+  Puebla = 'Puebla',
+  Tijuana = 'Tijuana',
+  Hermosillo ="Hermosillo",
+}
 
 @Entity()
 export class User {
@@ -16,8 +31,11 @@ export class User {
   @Column()
   telefono: string;
 
-  @Column()
-  ciudad: string;
+  @Column({
+    type: 'enum',
+    enum: Ciudad,
+  })
+  ciudad: Ciudad;
 
   @Column({ unique: true })
   email: string;
@@ -26,7 +44,7 @@ export class User {
   password: string;
 
   @Column({ unique: true, nullable: true, type: 'varchar' })
-  stripeCustomerId?: string; 
+  stripeCustomerId?: string;
 
   @CreateDateColumn()
   creadoEn: Date;
