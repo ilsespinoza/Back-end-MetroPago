@@ -11,7 +11,6 @@ export class AuthService {
     private readonly jwtService: JwtService,
   ) {}
 
-  // Validar usuario y contraseña
   async validateUser(email: string, password: string): Promise<User | null> {
     const user = await this.userService.buscarPorEmail(email);
     if (!user) return null;
@@ -22,7 +21,6 @@ export class AuthService {
     return user;
   }
 
-  // Generar JWT para usuario validado
   async login(user: User) {
     const payload = { email: user.email, sub: user.id };
     return {

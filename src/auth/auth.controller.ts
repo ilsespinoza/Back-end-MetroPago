@@ -6,9 +6,8 @@ export class AuthController {
   constructor(private readonly authService: AuthService) {}
 
   @Post('login')
-  async login(
-    @Body() body: { email: string; password: string },
-  ) {
+  async login(@Body() body: { email: string; password: string }) {
+    console.log('Body recibido:', body);
     const user = await this.authService.validateUser(body.email, body.password);
     if (!user) {
       throw new UnauthorizedException('Credenciales inválidas');

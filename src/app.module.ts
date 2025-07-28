@@ -10,7 +10,6 @@ import { StripeModule } from './stripe/stripe.module';
 import { ConfigModule } from '@nestjs/config';
 import { Stripe } from './stripe/entities/stripe.entity';
 
-
 @Module({
   imports: [
     TypeOrmModule.forRoot({
@@ -20,17 +19,17 @@ import { Stripe } from './stripe/entities/stripe.entity';
       username: 'postgres',
       password: 'ilseespinoza2708',
       database: 'metropago',
-      entities: [User, Subscription,Stripe],
+      entities: [User, Subscription, Stripe],
       synchronize: true,
     }),
-    TypeOrmModule.forFeature([User, Subscription,Stripe]),
+    TypeOrmModule.forFeature([User, Subscription, Stripe]),
     UserModule,
     SubscriptionModule,
     AuthModule,
     ScheduleModule.forRoot(),
     StripeModule,
     ConfigModule.forRoot({
-      isGlobal: true, 
+      isGlobal: true,
     }),
   ],
 })
