@@ -29,11 +29,8 @@ export class StripeService {
     return this.stripe;
   }
 
-  // ✅ MÉTODO FALTANTE PARA CREAR CLIENTES
   async crearCliente(email: string): Promise<Stripe.Customer> {
     const cliente = await this.stripe.customers.create({ email });
-
-    // Busca al usuario por su email
     const user = await this.userRepository.findOne({ where: { email } });
     if (user) {
       user.stripeCustomerId = cliente.id;
@@ -43,7 +40,6 @@ export class StripeService {
     return cliente;
   }
   async crearCheckoutSession(customerId: string, priceId: string) {
-    // Obtener el usuario por su customerId
     const user = await this.userRepository.findOne({
       where: { stripeCustomerId: customerId },
     });
@@ -51,8 +47,6 @@ export class StripeService {
     if (!user) {
       throw new Error(`Usuario con customerId ${customerId} no encontrado`);
     }
-  
-    // Obtener nombre del plan desde el priceId
     const planes = {
       'price_1RlI9jPKNWjJLZi9ywBM9GKo': 'Semanal',
       'price_1RlKi7PKNWjJLZi9DF8h8D4a': 'Mensual',
@@ -62,8 +56,7 @@ export class StripeService {
     };
   
     const nombrePlan = planes[priceId] || 'PlanDesconocido';
-  
-    // // Construir success_url dinámico con parámetros
+
     // const successUrl = `metropago://usuario/perfil?nombre=${encodeURIComponent(user.nombre)}&email=${encodeURIComponent(user.email)}&plan=${encodeURIComponent(nombrePlan)}`;
     const successUrl = 'metropago://login/login'
   
