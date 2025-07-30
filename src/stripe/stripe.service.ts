@@ -63,8 +63,9 @@ export class StripeService {
   
     const nombrePlan = planes[priceId] || 'PlanDesconocido';
   
-    // Construir success_url dinámico con parámetros
-    const successUrl = `metropago://usuario/perfil?nombre=${encodeURIComponent(user.nombre)}&email=${encodeURIComponent(user.email)}&plan=${encodeURIComponent(nombrePlan)}`;
+    // // Construir success_url dinámico con parámetros
+    // const successUrl = `metropago://usuario/perfil?nombre=${encodeURIComponent(user.nombre)}&email=${encodeURIComponent(user.email)}&plan=${encodeURIComponent(nombrePlan)}`;
+    const successUrl = 'metropago://login/login'
   
     return this.stripe.checkout.sessions.create({
       mode: 'subscription',

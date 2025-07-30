@@ -67,8 +67,7 @@ export class UserService {
   async remove(id: number): Promise<void> {
     await this.userRepository.delete(id);
   }
-
-  // Método extra para login con JWT
+  
   async buscarPorEmail(email: string): Promise<User | null> {
     return this.userRepository.findOne({ where: { email } });
   }
