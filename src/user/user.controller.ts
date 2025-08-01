@@ -1,4 +1,13 @@
-import { Controller, Get, Post, Body, Param, Delete, Put } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Post,
+  Body,
+  Param,
+  Delete,
+  Put,
+  NotFoundException,
+} from '@nestjs/common';
 import { UserService } from './user.service';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
@@ -20,8 +29,12 @@ export class UserController {
 
   // Obtener usuario por ID
   @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.userService.findOne(+id);
+  async getUserById(@Param('id') id: number) {
+    const user = await this.userService.findOneById(id);
+    if (!user) {
+      throw new NotFoundException('Usuario no encontrado');
+    }
+    return user;
   }
 
   //  Actualizar usuario
@@ -36,4 +49,3 @@ export class UserController {
     return this.userService.remove(+id);
   }
 }
-

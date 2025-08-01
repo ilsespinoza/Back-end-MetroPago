@@ -5,7 +5,10 @@ import { User } from './entities/user.entity';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import * as bcrypt from 'bcrypt';
-import { Subscription, SubscriptionStatus } from 'src/subscription/entities/subscription.entity';
+import {
+  Subscription,
+  SubscriptionStatus,
+} from 'src/subscription/entities/subscription.entity';
 import { StripeService } from 'src/stripe/stripe.service';
 
 @Injectable()
@@ -22,35 +25,35 @@ export class UserService {
     const existeUsuario = await this.userRepository.findOne({
       where: { email: createUserDto.email },
     });
-  
+
     if (existeUsuario) {
       throw new ConflictException('El correo ya está registrado');
     }
-  
+
     const hashedPassword = await bcrypt.hash(createUserDto.password, 10);
-  
-   
-    const clienteStripe = await this.stripeService.crearCliente(createUserDto.email);
-  
+
+    const clienteStripe = await this.stripeService.crearCliente(
+      createUserDto.email,
+    );
+
     const nuevoUsuario = this.userRepository.create({
       ...createUserDto,
       password: hashedPassword,
-      stripeCustomerId: clienteStripe.id, 
+      stripeCustomerId: clienteStripe.id,
     });
     const usuarioGuardado = await this.userRepository.save(nuevoUsuario);
-  
+
     const session = await this.stripeService.crearCheckoutSession(
       clienteStripe.id,
-      createUserDto.priceId
+      createUserDto.priceId,
     );
-  
+
     if (!session.url) {
       throw new Error('No se pudo crear la URL de checkout');
     }
-  
+
     return { checkoutUrl: session.url };
   }
-  
 
   findAll(): Promise<User[]> {
     return this.userRepository.find();
@@ -67,8 +70,12 @@ export class UserService {
   async remove(id: number): Promise<void> {
     await this.userRepository.delete(id);
   }
-  
+
   async buscarPorEmail(email: string): Promise<User | null> {
     return this.userRepository.findOne({ where: { email } });
+  }
+
+  async findOneById(id: number): Promise<User | null> {
+    return this.userRepository.findOne({ where: { id } });
   }
 }
