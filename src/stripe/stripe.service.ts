@@ -107,7 +107,7 @@ export class StripeService {
         subscriptionId,
         priceId,
         status,
-        startDate: new Date(subscription.start_date * 1000), // convertir segundos a ms
+        startDate: new Date(subscription.start_date * 1000), 
         endDate: subscription.ended_at
           ? new Date(subscription.ended_at * 1000)
           : null,

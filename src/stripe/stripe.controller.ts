@@ -51,27 +51,40 @@ export class StripeController {
     let event: Stripe.Event;
 
     try {
-      event = this.stripeService.getStripe().webhooks.constructEvent(
-        (request as any).rawBody, 
-        signature,
-        webhookSecret,
-      );
+      event = this.stripeService
+        .getStripe()
+        .webhooks.constructEvent(
+          (request as any).rawBody,
+          signature,
+          webhookSecret,
+        );
+      console.log('Webhook recibido, tipo:', event.type);
     } catch (err) {
       console.error('Error en la firma del webhook:', err.message);
       return response.status(400).send(`Webhook Error: ${err.message}`);
     }
 
     try {
-      await this.stripeService.registrarSuscripcionDesdeStripe(event);
+      if (
+        event.type === 'customer.subscription.created' ||
+        event.type === 'customer.subscription.updated'
+      ) {
+        await this.stripeService.registrarSuscripcionDesdeStripe(event);
+        console.log('Suscripción procesada y guardada correctamente.');
+      } else {
+        console.log('Evento ignorado:', event.type);
+      }
       return response.send({ received: true });
     } catch (err) {
       console.error('Error procesando evento del webhook:', err.message);
       return response.status(500).send('Error procesando webhook');
     }
   }
+
   @Get('suscripciones-activas')
   async obtenerSuscripcionesActivas() {
-    const suscripciones = await this.stripeService.obtenerUsuariosConSuscripcionesActivas();
+    const suscripciones =
+      await this.stripeService.obtenerUsuariosConSuscripcionesActivas();
     return suscripciones;
   }
 }
