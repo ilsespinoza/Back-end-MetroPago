@@ -7,6 +7,7 @@ import {
   Headers,
   HttpCode,
   Get,
+  RawBodyRequest,
 } from '@nestjs/common';
 import { StripeService } from './stripe.service';
 import { Request, Response } from 'express';
@@ -33,13 +34,16 @@ export class StripeController {
   @Post('webhook')
   @HttpCode(200)
   async handleWebhook(
-    @Req() request: Request,
+    @Req() request: RawBodyRequest<Request>,
     @Res() response: Response,
     @Headers('stripe-signature') signature: string,
+    @Body() body: any,
   ) {
     const webhookSecret = this.configService.get<string>(
       'STRIPE_WEBHOOK_SECRET',
     );
+
+    console.log(request.rawBody);
 
     if (!webhookSecret) {
       console.error('Falta STRIPE_WEBHOOK_SECRET en el .env');
@@ -53,11 +57,7 @@ export class StripeController {
     try {
       event = this.stripeService
         .getStripe()
-        .webhooks.constructEvent(
-          (request as any).rawBody,
-          signature,
-          webhookSecret,
-        );
+        .webhooks.constructEvent(request.rawBody!, signature, webhookSecret);
       console.log('Webhook recibido, tipo:', event.type);
     } catch (err) {
       console.error('Error en la firma del webhook:', err.message);
