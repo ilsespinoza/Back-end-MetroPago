@@ -3,7 +3,10 @@ import { ConfigService } from '@nestjs/config';
 import Stripe from 'stripe';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import { Stripe as StripeEntity, StripeSubscriptionStatus } from './entities/stripe.entity';
+import {
+  Stripe as StripeEntity,
+  StripeSubscriptionStatus,
+} from './entities/stripe.entity';
 import { User } from 'src/user/entities/user.entity';
 
 @Injectable()
@@ -43,23 +46,23 @@ export class StripeService {
     const user = await this.userRepository.findOne({
       where: { stripeCustomerId: customerId },
     });
-  
+
     if (!user) {
       throw new Error(`Usuario con customerId ${customerId} no encontrado`);
     }
     const planes = {
-      'price_1RlI9jPKNWjJLZi9ywBM9GKo': 'Semanal',
-      'price_1RlKi7PKNWjJLZi9DF8h8D4a': 'Mensual',
-      'price_1RlKjjPKNWjJLZi9PTB3eOOs': 'Bimensual',
-      'price_1RlKmNPKNWjJLZi9lTleDTfj': 'Semestral',
-      'price_1RlKnbPKNWjJLZi9rX5SLPu1': 'Anual',
+      price_1RlI9jPKNWjJLZi9ywBM9GKo: 'Semanal',
+      price_1RlKi7PKNWjJLZi9DF8h8D4a: 'Mensual',
+      price_1RlKjjPKNWjJLZi9PTB3eOOs: 'Bimensual',
+      price_1RlKmNPKNWjJLZi9lTleDTfj: 'Semestral',
+      price_1RlKnbPKNWjJLZi9rX5SLPu1: 'Anual',
     };
-  
+
     const nombrePlan = planes[priceId] || 'PlanDesconocido';
 
     // const successUrl = `metropago://usuario/perfil?nombre=${encodeURIComponent(user.nombre)}&email=${encodeURIComponent(user.email)}&plan=${encodeURIComponent(nombrePlan)}`;
-    const successUrl = 'metropago://login/login'
-  
+    const successUrl = 'metropago://login/login';
+
     return this.stripe.checkout.sessions.create({
       mode: 'subscription',
       customer: customerId,
@@ -68,7 +71,6 @@ export class StripeService {
       cancel_url: 'metropago://pago-cancelado',
     });
   }
-  
 
   async registrarSuscripcionDesdeStripe(event: Stripe.Event) {
     if (
@@ -89,7 +91,9 @@ export class StripeService {
     });
 
     if (!user) {
-      throw new Error(`Usuario con stripeCustomerId ${customerId} no encontrado`);
+      throw new Error(
+        `Usuario con stripeCustomerId ${customerId} no encontrado`,
+      );
     }
 
     let stripeRecord = await this.stripeRepository.findOne({
@@ -103,10 +107,18 @@ export class StripeService {
         subscriptionId,
         priceId,
         status,
+        startDate: new Date(subscription.start_date * 1000), // convertir segundos a ms
+        endDate: subscription.ended_at
+          ? new Date(subscription.ended_at * 1000)
+          : null,
       });
     } else {
       stripeRecord.status = status;
       stripeRecord.priceId = priceId;
+      stripeRecord.startDate = new Date(subscription.start_date * 1000);
+      stripeRecord.endDate = subscription.ended_at
+        ? new Date(subscription.ended_at * 1000)
+        : null;
     }
 
     await this.stripeRepository.save(stripeRecord);
@@ -115,11 +127,9 @@ export class StripeService {
   async obtenerUsuariosConSuscripcionesActivas() {
     const registros = await this.stripeRepository.find({
       where: { status: StripeSubscriptionStatus.ACTIVE },
-      relations: ['user'], 
+      relations: ['user'],
     });
-  
+
     return registros;
   }
-  
 }
-

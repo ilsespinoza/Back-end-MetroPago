@@ -5,10 +5,6 @@ import { User } from './entities/user.entity';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import * as bcrypt from 'bcrypt';
-import {
-  Subscription,
-  SubscriptionStatus,
-} from 'src/subscription/entities/subscription.entity';
 import { StripeService } from 'src/stripe/stripe.service';
 
 @Injectable()
@@ -17,8 +13,6 @@ export class UserService {
     @InjectRepository(User)
     private readonly userRepository: Repository<User>,
     private readonly stripeService: StripeService,
-    @InjectRepository(Subscription)
-    private readonly subscriptionRepository: Repository<Subscription>,
   ) {}
 
   async create(createUserDto: CreateUserDto): Promise<{ checkoutUrl: string }> {
@@ -32,6 +26,7 @@ export class UserService {
 
     const hashedPassword = await bcrypt.hash(createUserDto.password, 10);
 
+
     const clienteStripe = await this.stripeService.crearCliente(
       createUserDto.email,
     );
@@ -42,6 +37,7 @@ export class UserService {
       stripeCustomerId: clienteStripe.id,
     });
     const usuarioGuardado = await this.userRepository.save(nuevoUsuario);
+
 
     const session = await this.stripeService.crearCheckoutSession(
       clienteStripe.id,

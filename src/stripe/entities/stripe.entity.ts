@@ -1,5 +1,12 @@
-// stripe.entity.ts
-import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, UpdateDateColumn, ManyToOne, JoinColumn } from 'typeorm';
+import {
+  Entity,
+  PrimaryGeneratedColumn,
+  Column,
+  CreateDateColumn,
+  UpdateDateColumn,
+  ManyToOne,
+  JoinColumn,
+} from 'typeorm';
 import { User } from 'src/user/entities/user.entity';
 
 export enum StripeSubscriptionStatus {
@@ -17,16 +24,16 @@ export class Stripe {
 
   @ManyToOne(() => User, (user) => user.subscriptions, { nullable: false })
   @JoinColumn()
-  user: User;  
+  user: User;
 
   @Column({ unique: true })
-  customerId: string; 
+  customerId: string;
 
   @Column({ unique: true, nullable: true })
-  subscriptionId?: string; 
+  subscriptionId?: string;
 
   @Column()
-  priceId: string; 
+  priceId: string;
 
   @Column({
     type: 'enum',
@@ -34,6 +41,12 @@ export class Stripe {
     default: StripeSubscriptionStatus.TRIALING,
   })
   status: StripeSubscriptionStatus;
+
+  @Column({ type: 'timestamptz', nullable: true })
+  startDate?: Date;
+
+  @Column({ type: 'timestamptz', nullable: true })
+  endDate: Date | null;
 
   @CreateDateColumn()
   createdAt: Date;
