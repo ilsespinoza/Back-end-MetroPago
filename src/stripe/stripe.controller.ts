@@ -43,8 +43,6 @@ export class StripeController {
       'STRIPE_WEBHOOK_SECRET',
     );
 
-    console.log(request.rawBody);
-
     if (!webhookSecret) {
       console.error('Falta STRIPE_WEBHOOK_SECRET en el .env');
       return response

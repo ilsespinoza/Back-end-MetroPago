@@ -21,6 +21,11 @@ export class UserController {
     return this.userService.create(createUserDto);
   }
 
+  @Post('register-spei')
+  async createSpei(@Body() createUserDto: CreateUserDto) {
+    return this.userService.create(createUserDto, true);
+  }
+
   //  Obtener todos los usuarios
   @Get()
   findAll() {

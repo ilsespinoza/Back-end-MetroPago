@@ -15,7 +15,10 @@ export class UserService {
     private readonly stripeService: StripeService,
   ) {}
 
-  async create(createUserDto: CreateUserDto): Promise<{ checkoutUrl: string }> {
+  async create(
+    createUserDto: CreateUserDto,
+    spei?: boolean,
+  ): Promise<{ checkoutUrl: string }> {
     const existeUsuario = await this.userRepository.findOne({
       where: { email: createUserDto.email },
     });
@@ -25,7 +28,6 @@ export class UserService {
     }
 
     const hashedPassword = await bcrypt.hash(createUserDto.password, 10);
-
 
     const clienteStripe = await this.stripeService.crearCliente(
       createUserDto.email,
@@ -38,11 +40,15 @@ export class UserService {
     });
     const usuarioGuardado = await this.userRepository.save(nuevoUsuario);
 
-
-    const session = await this.stripeService.crearCheckoutSession(
-      clienteStripe.id,
-      createUserDto.priceId,
-    );
+    const session = spei
+      ? await this.stripeService.crearCheckoutSessionSpei(
+          clienteStripe.id,
+          createUserDto.priceId,
+        )
+      : await this.stripeService.crearCheckoutSession(
+          clienteStripe.id,
+          createUserDto.priceId,
+        );
 
     if (!session.url) {
       throw new Error('No se pudo crear la URL de checkout');
