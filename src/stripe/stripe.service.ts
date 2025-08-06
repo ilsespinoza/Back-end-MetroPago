@@ -60,7 +60,6 @@ export class StripeService {
 
     const nombrePlan = planes[priceId] || 'PlanDesconocido';
 
-    // const successUrl = `metropago://usuario/perfil?nombre=${encodeURIComponent(user.nombre)}&email=${encodeURIComponent(user.email)}&plan=${encodeURIComponent(nombrePlan)}`;
     const successUrl = 'metropago://login/login';
 
     return this.stripe.checkout.sessions.create({
@@ -112,6 +111,47 @@ export class StripeService {
           bank_transfer: { type: 'mx_bank_transfer' },
         },
       },
+      success_url: successUrl,
+      cancel_url: 'metropago://pago-cancelado',
+    });
+  }
+
+  async crearCheckoutSessionOxxo(customerId: string, priceId: string) {
+    const user = await this.userRepository.findOne({
+      where: { stripeCustomerId: customerId },
+    });
+
+    if (!user) {
+      throw new Error(`Usuario con customerId ${customerId} no encontrado`);
+    }
+
+    const planes = {
+      price_1RlI9jPKNWjJLZi9ywBM9GKo: 'Semanal',
+      price_1RlKi7PKNWjJLZi9DF8h8D4a: 'Mensual',
+      price_1RlKjjPKNWjJLZi9PTB3eOOs: 'Bimensual',
+      price_1RlKmNPKNWjJLZi9lTleDTfj: 'Semestral',
+      price_1RlKnbPKNWjJLZi9rX5SLPu1: 'Anual',
+    };
+
+    const price = await this.stripe.prices.retrieve(priceId);
+    const nombrePlan = planes[priceId] || 'PlanDesconocido';
+
+    const successUrl = 'metropago://login/login';
+
+    return this.stripe.checkout.sessions.create({
+      mode: 'payment',
+      customer: customerId,
+      line_items: [
+        {
+          quantity: 1,
+          price_data: {
+            currency: price.currency,
+            unit_amount: price.unit_amount!,
+            product_data: { name: nombrePlan },
+          },
+        },
+      ],
+      payment_method_types: ['oxxo'],
       success_url: successUrl,
       cancel_url: 'metropago://pago-cancelado',
     });

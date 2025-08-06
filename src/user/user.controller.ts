@@ -18,21 +18,24 @@ export class UserController {
 
   @Post('register')
   async create(@Body() createUserDto: CreateUserDto) {
-    return this.userService.create(createUserDto);
+    return this.userService.create(createUserDto,'card');
   }
 
   @Post('register-spei')
   async createSpei(@Body() createUserDto: CreateUserDto) {
-    return this.userService.create(createUserDto, true);
+    return this.userService.create(createUserDto, 'transfer');
   }
 
-  //  Obtener todos los usuarios
+  @Post('register-oxxo')
+  async createOxxo(@Body() createUserDto: CreateUserDto) {
+    return this.userService.create(createUserDto, 'oxxo');
+  }
+
   @Get()
   findAll() {
     return this.userService.findAll();
   }
 
-  // Obtener usuario por ID
   @Get(':id')
   async getUserById(@Param('id') id: number) {
     const user = await this.userService.findOneById(id);
@@ -41,8 +44,6 @@ export class UserController {
     }
     return user;
   }
-
-  //  Actualizar usuario
   @Put(':id')
   update(@Param('id') id: string, @Body() updateUserDto: UpdateUserDto) {
     return this.userService.update(+id, updateUserDto);

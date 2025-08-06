@@ -16,46 +16,56 @@ export class UserService {
   ) {}
 
   async create(
-    createUserDto: CreateUserDto,
-    spei?: boolean,
-  ): Promise<{ checkoutUrl: string }> {
-    const existeUsuario = await this.userRepository.findOne({
-      where: { email: createUserDto.email },
-    });
+  createUserDto: CreateUserDto,
+  paymentType: 'card' | 'transfer' | 'oxxo' = 'card',
+): Promise<{ checkoutUrl: string }> {
+  const existeUsuario = await this.userRepository.findOne({
+    where: { email: createUserDto.email },
+  });
 
-    if (existeUsuario) {
-      throw new ConflictException('El correo ya está registrado');
-    }
-
-    const hashedPassword = await bcrypt.hash(createUserDto.password, 10);
-
-    const clienteStripe = await this.stripeService.crearCliente(
-      createUserDto.email,
-    );
-
-    const nuevoUsuario = this.userRepository.create({
-      ...createUserDto,
-      password: hashedPassword,
-      stripeCustomerId: clienteStripe.id,
-    });
-    const usuarioGuardado = await this.userRepository.save(nuevoUsuario);
-
-    const session = spei
-      ? await this.stripeService.crearCheckoutSessionSpei(
-          clienteStripe.id,
-          createUserDto.priceId,
-        )
-      : await this.stripeService.crearCheckoutSession(
-          clienteStripe.id,
-          createUserDto.priceId,
-        );
-
-    if (!session.url) {
-      throw new Error('No se pudo crear la URL de checkout');
-    }
-
-    return { checkoutUrl: session.url };
+  if (existeUsuario) {
+    throw new ConflictException('El correo ya está registrado');
   }
+
+  const hashedPassword = await bcrypt.hash(createUserDto.password, 10);
+
+  const clienteStripe = await this.stripeService.crearCliente(
+    createUserDto.email,
+  );
+
+  const nuevoUsuario = this.userRepository.create({
+    ...createUserDto,
+    password: hashedPassword,
+    stripeCustomerId: clienteStripe.id,
+  });
+
+  const usuarioGuardado = await this.userRepository.save(nuevoUsuario);
+  let session;
+
+  if (paymentType === 'transfer') {
+    session = await this.stripeService.crearCheckoutSessionSpei(
+      clienteStripe.id,
+      createUserDto.priceId,
+    );
+  } else if (paymentType === 'oxxo') {
+    session = await this.stripeService.crearCheckoutSessionOxxo(
+      clienteStripe.id,
+      createUserDto.priceId,
+    );
+  } else {
+    session = await this.stripeService.crearCheckoutSession(
+      clienteStripe.id,
+      createUserDto.priceId,
+    );
+  }
+
+  if (!session.url) {
+    throw new Error('No se pudo crear la URL de checkout');
+  }
+
+  return { checkoutUrl: session.url };
+}
+
 
   findAll(): Promise<User[]> {
     return this.userRepository.find();
