@@ -7,6 +7,7 @@ import { ScheduleModule } from '@nestjs/schedule';
 import { StripeModule } from './stripe/stripe.module';
 import { ConfigModule } from '@nestjs/config';
 import { Stripe } from './stripe/entities/stripe.entity';
+import { PagosModule } from './pagos/pagos.module';
 
 @Module({
   imports: [
@@ -28,6 +29,7 @@ import { Stripe } from './stripe/entities/stripe.entity';
     ConfigModule.forRoot({
       isGlobal: true,
     }),
+    PagosModule,
   ],
 })
 export class AppModule {}

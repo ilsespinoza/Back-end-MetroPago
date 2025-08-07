@@ -6,7 +6,7 @@ import {
   OneToMany,
 } from 'typeorm';
 import { Stripe } from 'src/stripe/entities/stripe.entity';
-
+import { Pago } from 'src/pagos/entities/pago.entity';
 
 export enum Ciudad {
   CDMX = 'CDMX',
@@ -14,7 +14,7 @@ export enum Ciudad {
   Monterrey = 'Monterrey',
   Puebla = 'Puebla',
   Tijuana = 'Tijuana',
-  Hermosillo ="Hermosillo",
+  Hermosillo = 'Hermosillo',
 }
 
 @Entity()
@@ -51,4 +51,7 @@ export class User {
 
   @OneToMany(() => Stripe, (stripe) => stripe.user)
   subscriptions: Stripe[];
+
+  @OneToMany(() => Pago, (pago) => pago.user)
+  pagos: Pago[];
 }

@@ -6,8 +6,10 @@ import {
   UpdateDateColumn,
   ManyToOne,
   JoinColumn,
+  OneToMany,
 } from 'typeorm';
 import { User } from 'src/user/entities/user.entity';
+import { Pago } from 'src/pagos/entities/pago.entity';
 
 export enum StripeSubscriptionStatus {
   ACTIVE = 'active',
@@ -53,4 +55,7 @@ export class Stripe {
 
   @UpdateDateColumn()
   updatedAt: Date;
+
+  @OneToMany(() => Pago, (pago) => pago.stripeSubscription)
+  pagos: Pago[];
 }
