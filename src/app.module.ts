@@ -8,6 +8,7 @@ import { StripeModule } from './stripe/stripe.module';
 import { ConfigModule } from '@nestjs/config';
 import { Stripe } from './stripe/entities/stripe.entity';
 import { PagosModule } from './pagos/pagos.module';
+import { Pago } from './pagos/entities/pago.entity';
 
 @Module({
   imports: [
@@ -18,10 +19,10 @@ import { PagosModule } from './pagos/pagos.module';
       username: 'postgres',
       password: 'ilseespinoza2708',
       database: 'metropago',
-      entities: [User, Stripe],
+      entities: [User, Stripe, Pago],
       synchronize: true,
     }),
-    TypeOrmModule.forFeature([User, Stripe]),
+    TypeOrmModule.forFeature([User, Stripe, Pago]),
     UserModule,
     AuthModule,
     ScheduleModule.forRoot(),
