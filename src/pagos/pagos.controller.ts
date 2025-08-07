@@ -1,11 +1,29 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Post,
+  Body,
+  Patch,
+  Param,
+  Delete,
+  UseGuards,
+  Req,
+} from '@nestjs/common';
 import { PagosService } from './pagos.service';
 import { CreatePagoDto } from './dto/create-pago.dto';
 import { UpdatePagoDto } from './dto/update-pago.dto';
+import { AuthGuard } from '@nestjs/passport';
 
 @Controller('pagos')
 export class PagosController {
   constructor(private readonly pagosService: PagosService) {}
+
+  @UseGuards(AuthGuard('jwt'))
+  @Get('historial')
+  async obtenerHistorialPagos(@Req() req) {
+    const userId = req.user.userId;
+    return this.pagosService.obtenerHistorialPorUsuario(userId);
+  }
 
   @Post()
   create(@Body() createPagoDto: CreatePagoDto) {
