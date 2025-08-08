@@ -162,6 +162,10 @@ export class StripeService {
       event.type !== 'customer.subscription.created' &&
       event.type !== 'customer.subscription.updated'
     ) {
+      console.log(
+        'Evento ignorado en registrarSuscripcionDesdeStripe:',
+        event.type,
+      );
       return;
     }
 
@@ -171,42 +175,69 @@ export class StripeService {
     const priceId = subscription.items.data[0].price.id;
     const status = subscription.status as StripeSubscriptionStatus;
 
-    const user = await this.userRepository.findOne({
-      where: { stripeCustomerId: customerId },
-    });
+    console.log('Registrar suscripción - Datos recibidos:');
+    console.log('customerId:', customerId);
+    console.log('subscriptionId:', subscriptionId);
+    console.log('priceId:', priceId);
+    console.log('status:', status);
 
-    if (!user) {
-      throw new Error(
-        `Usuario con stripeCustomerId ${customerId} no encontrado`,
-      );
-    }
-
-    let stripeRecord = await this.stripeRepository.findOne({
-      where: { subscriptionId },
-    });
-
-    if (!stripeRecord) {
-      stripeRecord = this.stripeRepository.create({
-        user,
-        customerId,
-        subscriptionId,
-        priceId,
-        status,
-        startDate: new Date(subscription.start_date * 1000),
-        endDate: subscription.ended_at
-          ? new Date(subscription.ended_at * 1000)
-          : null,
+    try {
+      const allUsers = await this.userRepository.find({
+        where: { stripeCustomerId: customerId },
       });
-    } else {
-      stripeRecord.status = status;
-      stripeRecord.priceId = priceId;
-      stripeRecord.startDate = new Date(subscription.start_date * 1000);
-      stripeRecord.endDate = subscription.ended_at
-        ? new Date(subscription.ended_at * 1000)
-        : null;
-    }
+      console.log(
+        `Usuarios encontrados con stripeCustomerId ${customerId}:`,
+        allUsers.length,
+      );
 
-    await this.stripeRepository.save(stripeRecord);
+      const user = await this.userRepository.findOne({
+        where: { stripeCustomerId: customerId },
+      });
+
+      if (!user) {
+        console.error(
+          `Usuario con stripeCustomerId ${customerId} no encontrado`,
+        );
+        return; 
+      }
+
+      console.log('Usuario encontrado:', user.id, user.email);
+
+      let stripeRecord = await this.stripeRepository.findOne({
+        where: { subscriptionId },
+      });
+
+      if (!stripeRecord) {
+        console.log('Creando nueva suscripción para usuario:', user.id);
+        stripeRecord = this.stripeRepository.create({
+          user,
+          customerId,
+          subscriptionId,
+          priceId,
+          status,
+          startDate: new Date(subscription.start_date * 1000),
+          endDate: subscription.ended_at
+            ? new Date(subscription.ended_at * 1000)
+            : null,
+        });
+      } else {
+        console.log(
+          'Actualizando suscripción existente para usuario:',
+          user.id,
+        );
+        stripeRecord.status = status;
+        stripeRecord.priceId = priceId;
+        stripeRecord.startDate = new Date(subscription.start_date * 1000);
+        stripeRecord.endDate = subscription.ended_at
+          ? new Date(subscription.ended_at * 1000)
+          : null;
+      }
+
+      await this.stripeRepository.save(stripeRecord);
+      console.log('Suscripción guardada correctamente en base de datos');
+    } catch (error) {
+      console.error('Error en registrarSuscripcionDesdeStripe:', error);
+    }
   }
 
   async obtenerUsuariosConSuscripcionesActivas() {
